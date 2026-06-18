@@ -1,0 +1,2003 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WaterLink Field Mobile Dashboard | 현장 공무 & AI 검측 카메라 앱</title>
+  
+  <!-- FontAwesome & Pretendard -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+  
+  <style>
+    /* 고대비 라이트 테마 (웹사이트와 100% 동기화) */
+    :root {
+      --bg-main: #f8fafc;        /* 연한 그레이 블루 (시각 피로 감소) */
+      --bg-card: #ffffff;        /* 순수 화이트 카드 */
+      --bg-input: #f8fafc;
+      --border-color: rgba(2, 132, 199, 0.25);
+      --border-focus: #0284c7;   /* 코퍼레이트 블루 */
+      
+      --primary: #0284c7;        /* 코퍼레이트 블루 */
+      --primary-neon: #0284c7;   
+      --success: #15803d;        /* 고대비 에메랄드 그린 */
+      --danger: #b91c1c;         /* 고대비 레드 */
+      --warning: #b45309;        /* 고대비 옐로우 브라운 */
+      
+      --text-main: #0f172a;      /* 완전하고 선명한 네이비 블랙 */
+      --text-body: #334155;      /* 가독성 높은 보조 본문 */
+      --text-muted: #64748b;
+      
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      letter-spacing: -0.02em;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
+      background-color: #f1f5f9;
+      color: var(--text-body);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* 모바일 프레임 컨테이너 */
+    .phone-wrapper {
+      width: 100%;
+      max-width: 440px;
+      height: 100vh;
+      background-color: var(--bg-main);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border-left: 1px solid rgba(0, 0, 0, 0.1);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* 공통 상단 헤더 */
+    .app-header {
+      background: #ffffff;
+      backdrop-filter: blur(10px);
+      padding: 0.9rem 1.1rem;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .gps-indicator {
+      font-size: 0.75rem;
+      background: rgba(21, 128, 61, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .gps-indicator.searching {
+      background: rgba(180, 83, 9, 0.1);
+      border-color: var(--warning);
+      color: var(--warning);
+    }
+
+    .dropdown-select {
+      width: 100%;
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.55rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230284c7'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 18px;
+    }
+
+    /* 메인 컨텐츠 뷰포트 (스크롤 지원) */
+    .app-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 5rem; /* 하단 네비게이션바 간섭 방지 */
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    /* 기성 청구 마감 긴급 알림 알러트 */
+    .notif-banner {
+      background: rgba(185, 28, 28, 0.05);
+      border: 1px solid rgba(185, 28, 28, 0.3);
+      border-left: 4px solid var(--danger);
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .notif-banner strong {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    /* ==================== TAB 1: 대시보드 홈 스타일 ==================== */
+    .mobile-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-card .icon-badge {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-card .lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: bold;
+    }
+
+    .stat-card .val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .chart-box {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-box h4 {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.8rem;
+    }
+
+    .recent-table-box {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .recent-table-box h4 {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text-main);
+      padding: 0.8rem 1rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .mobile-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      text-align: left;
+    }
+
+    .mobile-table th {
+      background: #f1f5f9;
+      padding: 0.6rem 0.8rem;
+      color: var(--text-main);
+      font-weight: bold;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .mobile-table td {
+      padding: 0.6rem 0.8rem;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+    }
+
+    .thumbnail-img {
+      width: 42px;
+      height: 32px;
+      border-radius: 4px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid var(--border-color);
+    }
+
+    /* ==================== TAB 2: AI 카메라 스캐너 스타일 ==================== */
+    .viewport-camera-container {
+      width: 100%;
+      height: 320px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      border: 1.5px solid var(--border-color);
+    }
+
+    .video-element {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .virtual-viewport-element {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 가상 바운딩 박스 */
+    .cam-bbox {
+      position: absolute;
+      border: 2px solid var(--primary-neon);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+      display: none;
+      z-index: 10;
+    }
+
+    .cam-bbox-label {
+      position: absolute;
+      top: -22px;
+      left: 0;
+      background: var(--primary-neon);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      white-space: nowrap;
+    }
+
+    /* 라이브 소칠판 오버레이 */
+    .cam-overlay-slate {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 130px;
+      background: #ffffff;
+      border: 1px solid #000000;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .cam-slate-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cam-slate-table td {
+      border: 1px solid #000000;
+      padding: 2px 4px;
+      font-size: 0.58rem;
+      color: #000000;
+      height: 16px;
+      font-family: 'Malgun Gothic', 'Dotum', sans-serif;
+      font-weight: bold;
+    }
+
+    .cam-slate-table .lbl {
+      width: 32px;
+      text-align: center;
+      background: #ffffff;
+    }
+
+    .cam-slate-table .val {
+      text-align: left;
+      font-weight: normal;
+      padding-left: 3px;
+    }
+
+    /* 레이저 및 셔터 플래시 */
+    .cam-laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--primary-neon);
+      box-shadow: 0 0 10px var(--primary-neon);
+      z-index: 12;
+      animation: vertical-scan 2.2s linear infinite alternate;
+      display: none;
+    }
+
+    .cam-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      opacity: 0;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .camera-control-box {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .camera-shutter-row {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .btn-cam-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cam-circle:active {
+      background: var(--primary);
+      color: #fff;
+      transform: scale(0.9);
+    }
+
+    .shutter-btn-outer {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 4px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .shutter-btn-inner {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--primary);
+      transition: all 0.2s;
+    }
+
+    .shutter-btn-outer:active .shutter-btn-inner {
+      background: var(--border-focus);
+      transform: scale(0.9);
+    }
+
+    /* ==================== TAB 3: 공무 문서 보관함 스타일 ==================== */
+    .doc-item-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .doc-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .doc-card-header h5 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .doc-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-body);
+    }
+
+    .doc-meta-grid span strong {
+      color: var(--text-main);
+    }
+
+    .btn-group-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .btn-mini {
+      flex: 1;
+      padding: 0.6rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      transition: all 0.2s;
+    }
+
+    .btn-mini.primary { background: var(--primary); color: #fff; }
+    .btn-mini.success { background: var(--success); color: #fff; }
+
+    /* ==================== TAB 4: 공사 현장 관리 스타일 ==================== */
+    .project-manage-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--border-focus));
+    }
+
+    .task-checkbox-list {
+      background: var(--bg-main);
+      padding: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .task-item input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--primary-neon);
+    }
+
+    .task-item.completed span {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* ==================== 공통 네비게이션 탭바 스타일 ==================== */
+    .app-bottom-navbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #ffffff;
+      border-top: 2px solid var(--border-color);
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      height: 60px;
+      z-index: 120;
+    }
+
+    .navbar-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .navbar-tab-btn i {
+      font-size: 1.15rem;
+    }
+
+    .navbar-tab-btn.active {
+      color: var(--primary);
+    }
+
+    /* 드로어 입력 폼 컨트롤 스타일 */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .form-input {
+      background: var(--bg-input);
+      border: 2px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.65rem 0.8rem;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition: all 0.25s ease;
+      width: 100%;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    /* 드로어 및 팝업 모달 */
+    .drawer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 150;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .drawer-box {
+      width: 100%;
+      max-width: 380px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: var(--shadow-lg);
+      color: var(--text-main);
+    }
+
+    /* 엑셀 미리보기 팝업 모달 고유 스타일 */
+    .preview-modal-box {
+      width: 100%;
+      height: 85vh;
+      overflow-y: auto;
+      background: #ffffff;
+      color: #000;
+      padding: 1rem !important;
+    }
+
+    /* 엑셀 리드 스타일 */
+    .excel-preview-frame {
+      font-family: 'Malgun Gothic', 'Dotum', sans-serif;
+      background: #ffffff;
+      color: #000;
+      width: 100%;
+    }
+
+    .excel-title-bar {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: bold;
+      letter-spacing: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000000;
+      font-size: 0.75rem;
+    }
+
+    .excel-table td {
+      border: 1px solid #000000;
+      padding: 4px;
+      font-weight: bold;
+      text-align: center;
+      height: 28px;
+    }
+
+    .excel-info-label {
+      background: #ffffff;
+      font-weight: 800;
+    }
+
+    .excel-photo-title-cell {
+      background: #ffffff;
+      font-weight: 800;
+      font-size: 0.8rem;
+      height: 32px !important;
+    }
+
+    .excel-photo-cell {
+      padding: 4px !important;
+      background: #ffffff;
+    }
+
+    .excel-photo-view {
+      width: 100%;
+      height: 120px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      border: 1px solid #cbd5e1;
+    }
+
+    .excel-photo-slate {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 85px;
+      background: #ffffff;
+      z-index: 10;
+    }
+
+    .excel-slate-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #000000;
+    }
+
+    .excel-slate-table td {
+      border: 1px solid #000000 !important;
+      padding: 1px 2px !important;
+      font-size: 0.38rem !important;
+      color: #000000 !important;
+      height: 11px !important;
+      font-family: 'Malgun Gothic', 'Dotum', sans-serif !important;
+    }
+
+    .excel-slate-table .slate-lbl {
+      width: 25px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .excel-slate-table .slate-val {
+      text-align: left;
+      font-weight: normal;
+      padding-left: 2px;
+    }
+
+    .excel-photo-placeholder {
+      width: 100%;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #fafafa;
+      color: #94a3b8;
+      font-size: 0.65rem;
+      border: 1px dashed #cbd5e1;
+    }
+
+    /* 탭 페이지 스왑 */
+    .tab-section {
+      display: none;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .tab-section.active {
+      display: flex;
+    }
+
+    @keyframes vertical-scan {
+      0% { top: 0%; }
+      100% { top: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-wrapper">
+    
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="logo">
+          <i class="fa-solid fa-droplet"></i>
+          <span>WATERLINK FIELD</span>
+        </div>
+        <div class="gps-indicator" id="gpsStatus">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span>가상 GPS 활성</span>
+        </div>
+      </div>
+      
+      <div class="project-selector-wrapper">
+        <select class="dropdown-select" id="projectSelector" onchange="onProjectSelectorChange(this)">
+          <option value="yongwoon">대전 동구 용전동 164-4 (긴급)</option>
+          <option value="sangdang">청주 상당구 금천동 29-1 (상시)</option>
+          <option value="jochiwon">세종 조치원읍 정리 12-3 (긴급)</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Main Viewport Scroll Content Area -->
+    <main class="app-viewport">
+      
+      <!-- ==================== TAB 1: 대시보드 홈 ==================== -->
+      <section class="tab-section active" id="tab-home">
+        <!-- 긴급 기성 알림 배너 -->
+        <div class="notif-banner">
+          <span><i class="fa-solid fa-triangle-exclamation"></i> <strong>기성 마감 D-3</strong> 용전동 현장 서류 마감 임박</span>
+        </div>
+
+        <!-- 4 Statistics Summary Cards Grid -->
+        <div class="mobile-grid-2">
+          <div class="stat-card">
+            <span class="icon-badge"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+            <span class="lbl">청구 대상 금액</span>
+            <span class="val" id="statClaimVal">₩42,500,000</span>
+          </div>
+          <div class="stat-card">
+            <span class="icon-badge" style="color:var(--success);"><i class="fa-solid fa-circle-check"></i></span>
+            <span class="lbl">AI 분석 정합성</span>
+            <span class="val">99.8%</span>
+          </div>
+          <div class="stat-card">
+            <span class="icon-badge"><i class="fa-solid fa-file-invoice"></i></span>
+            <span class="lbl">완성 기성서류</span>
+            <span class="val" id="statFinishedDocs">3 / 5 건</span>
+          </div>
+          <div class="stat-card">
+            <span class="icon-badge" style="color:var(--warning);"><i class="fa-solid fa-clock"></i></span>
+            <span class="lbl">행정 절감 시간</span>
+            <span class="val">18.5 hr</span>
+          </div>
+        </div>
+
+        <!-- SVG Trend Chart -->
+        <div class="chart-box">
+          <h4>현장 데이터 자동 수집 추이</h4>
+          <div style="height: 120px; width: 100%;">
+            <svg viewBox="0 0 400 120" style="width:100%; height:100%; overflow:visible;">
+              <path d="M 20 100 Q 100 80, 180 50 T 340 20" fill="none" stroke="#38bdf8" stroke-width="3"/>
+              <circle cx="20" cy="100" r="4" fill="#38bdf8"/>
+              <circle cx="180" cy="50" r="4" fill="#38bdf8"/>
+              <circle cx="340" cy="20" r="5" fill="#10b981"/>
+              <text x="20" y="118" fill="#64748b" font-size="9" text-anchor="middle">06-12</text>
+              <text x="180" y="118" fill="#64748b" font-size="9" text-anchor="middle">06-15</text>
+              <text x="340" y="118" fill="#38bdf8" font-size="9" text-anchor="middle">오늘</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Recent Upload Activity Table -->
+        <div class="recent-table-box">
+          <h4>최근 수집 검측 사진 리스트</h4>
+          <div class="table-responsive">
+            <table class="mobile-table" id="recentUploadsTable">
+              <thead>
+                <tr>
+                  <th>사진</th>
+                  <th>공정</th>
+                  <th>위치/수치</th>
+                  <th>분석일시</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Loaded Dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: Vision AI 카메라 스캐너 ==================== -->
+      <section class="tab-section" id="tab-scanner">
+        <div class="viewport-camera-container">
+          <!-- WebRTC Video -->
+          <video class="video-element" id="videoStream" autoplay playsinline></video>
+          <!-- Fallback Virtual viewport -->
+          <div class="virtual-viewport-element" id="virtualViewport" style="background-image: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+            <div class="focus-guide"></div>
+            <div id="pcCameraTip" style="font-size:0.75rem; text-align:center; color:#cbd5e1; padding:2rem; pointer-events:none;">
+              <i class="fa-solid fa-camera" style="font-size:2rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
+              카메라 구동 가능<br>
+              <span style="font-size:0.65rem; color:#94a3b8;">(PC는 하단 셔터 누르면 자동 시뮬레이션 사진 제공)</span>
+            </div>
+          </div>
+
+          <!-- Laser Scan Line -->
+          <div class="cam-laser" id="camLaserLine"></div>
+          <!-- Bounding Box overlay -->
+          <div class="cam-bbox" id="camBbox">
+            <span class="cam-bbox-label" id="camBboxLabel">상수도 주철관 D150</span>
+          </div>
+
+          <!-- Live Overlay Slate -->
+          <div class="cam-overlay-slate" id="camLiveSlate">
+            <table class="cam-slate-table">
+              <tr><td class="lbl">공사명</td><td class="val" id="slateValProj">2025년 중부1구역</td></tr>
+              <tr><td class="lbl">공 종</td><td class="val" id="slateValProcess">터파기 굴착</td></tr>
+              <tr><td class="lbl">위 치</td><td class="val" id="slateValLoc">은행동116-10</td></tr>
+              <tr><td class="lbl">일 자</td><td class="val" id="slateValDate">2026-06-18</td></tr>
+            </table>
+          </div>
+
+          <div class="cam-flash" id="camShutterFlash"></div>
+        </div>
+
+        <!-- Camera Control Box -->
+        <div class="camera-control-box">
+          <div class="camera-shutter-row">
+            <button class="btn-cam-circle" onclick="document.getElementById('hiddenFileInput').click()" title="갤러리 선택">
+              <i class="fa-regular fa-image"></i>
+              <input type="file" id="hiddenFileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+            </button>
+            <button class="shutter-btn-outer" onclick="takePhoto()" title="사진 촬영">
+              <div class="shutter-btn-inner"></div>
+            </button>
+            <button class="btn-cam-circle" onclick="toggleEditDrawer(true)" title="소칠판 수정">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+          </div>
+
+          <div class="btn-group-row">
+            <button class="btn-mini" style="background:#e2e8f0; color:var(--text-main); border:2px solid var(--border-color);" onclick="resetAppView()">초기화</button>
+            <button class="btn-mini primary" id="sendDataBtn" disabled onclick="sendToDashboard()">분석 & 대시보드 전송</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: 공무 문서 보관함 ==================== -->
+      <section class="tab-section" id="tab-chest">
+        <div style="display:flex; flex-direction:column; gap:0.8rem;" id="documentListContainer">
+          <!-- Loaded Dynamically -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: 공사 현장 관리 ==================== -->
+      <section class="tab-section" id="tab-project">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:-0.4rem;">
+          <button class="btn-mini success" style="max-width:130px; font-size:0.8rem;" onclick="openNewProjectModal()"><i class="fa-solid fa-plus"></i> 신규 현장 추가</button>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:1rem;" id="projectManageGrid">
+          <!-- Loaded Dynamically -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (40~60대 최적화 큼직한 레이아웃) -->
+    <nav class="app-bottom-navbar">
+      <button class="navbar-tab-btn active" onclick="switchNavTab('tab-home', this)">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>대시보드 홈</span>
+      </button>
+      <button class="navbar-tab-btn" onclick="switchNavTab('tab-scanner', this)">
+        <i class="fa-solid fa-camera"></i>
+        <span>AI 카메라</span>
+      </button>
+      <button class="navbar-tab-btn" onclick="switchNavTab('tab-chest', this)">
+        <i class="fa-solid fa-file-invoice"></i>
+        <span>문서보관함</span>
+      </button>
+      <button class="navbar-tab-btn" onclick="switchNavTab('tab-project', this)">
+        <i class="fa-solid fa-helmet-safety"></i>
+        <span>현장 관리</span>
+      </button>
+    </nav>
+
+    <!-- Edit Slate Text Drawer Drawer Overlay -->
+    <div class="drawer-overlay" id="editDrawerOverlay" onclick="toggleEditDrawer(false)">
+      <div class="drawer-box" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-color); padding-bottom:0.5rem;">
+          <h4 style="color:var(--primary); font-weight:800;">디지털 소칠판 정보 편집</h4>
+          <button style="background:transparent; border:none; color:var(--text-main); font-size:1.1rem; cursor:pointer;" onclick="toggleEditDrawer(false)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="form-group">
+          <label>소칠판 공사구역명</label>
+          <input type="text" id="inputProj" class="form-input" value="2025년 중부1구역" oninput="syncSlateText()">
+        </div>
+        <div class="form-group">
+          <label>공종 구분</label>
+          <input type="text" id="inputProcess" class="form-input" value="터파기 굴착" oninput="syncSlateText()">
+        </div>
+        <div class="form-group">
+          <label>시공 지번 주소</label>
+          <input type="text" id="inputLoc" class="form-input" value="은행동116-10" oninput="syncSlateText()">
+        </div>
+        <button class="btn-mini primary" style="padding:0.8rem; margin-top:0.3rem;" onclick="toggleEditDrawer(false)">수정 완료</button>
+      </div>
+    </div>
+
+    <!-- New Project Modal Overlay -->
+    <div class="drawer-overlay" id="addProjectModalOverlay" onclick="closeNewProjectModal()">
+      <div class="drawer-box" onclick="event.stopPropagation()">
+        <h4 style="color:var(--primary); font-weight:800; border-bottom:2px solid var(--border-color); padding-bottom:0.5rem;">신규 시공 현장 추가</h4>
+        <form onsubmit="handleNewProjectSubmit(event)" style="display:flex; flex-direction:column; gap:0.8rem;">
+          <div class="form-group">
+            <label>시공 현장 공사명</label>
+            <input type="text" id="newProjName" class="form-input" placeholder="예: 대전 중구 선화동 관로 개량공사" required>
+          </div>
+          <div class="form-group">
+            <label>발주처 (지자체)</label>
+            <input type="text" id="newProjClient" class="form-input" placeholder="예: 대전광역시 상수도사업본부" required>
+          </div>
+          <div class="form-group">
+            <label>공사 기간</label>
+            <input type="text" id="newProjPeriod" class="form-input" placeholder="예: 2026-07-01 ~ 2026-09-30" required>
+          </div>
+          <div class="form-group">
+            <label>GPS 매핑 주소</label>
+            <input type="text" id="newProjLocation" class="form-input" placeholder="예: Lat 36.3251 / Lon 127.4190" required>
+          </div>
+          <div class="btn-group-row" style="margin-top:0.4rem;">
+            <button type="button" class="btn-mini" style="background:#e2e8f0; color:var(--text-main); border:1px solid var(--border-color);" onclick="closeNewProjectModal()">취소</button>
+            <button type="submit" class="btn-mini primary">현장 등록</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Document Preview Popup Modal Overlay -->
+    <div class="drawer-overlay" id="virtualDocPreviewModalOverlay" onclick="closeDocPreviewModal()">
+      <div class="drawer-box" style="max-width:420px; padding:0; overflow:hidden;" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:1rem; border-bottom:2px solid var(--border-color);">
+          <h4 style="color:var(--primary); font-weight:800; font-size:1rem; margin:0;"><i class="fa-solid fa-file-invoice"></i> 지자체 표준 사진대지 미리보기</h4>
+          <button style="background:transparent; border:none; color:var(--text-main); font-size:1.2rem; cursor:pointer;" onclick="closeDocPreviewModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="preview-modal-box" id="excelPreviewContainer">
+          <!-- Loaded Dynamically (Excel Replica) -->
+        </div>
+        
+        <div style="background:var(--bg-main); padding:0.8rem; border-top:2px solid var(--border-color); display:flex; justify-content:stretch;">
+          <button class="btn-mini success" id="previewDownloadBtn" style="width:100%;"><i class="fa-solid fa-file-excel"></i> 엑셀 파일(CSV) 다운로드</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Hidden Canvas for Photo & Slate Synthesis -->
+  <canvas id="synthesisCanvas" width="800" height="600"></canvas>
+
+  <script>
+    // Global State
+    let currentProjKey = 'yongwoon';
+    let capturedImgData = null;
+    let synthesizedImgData = null;
+    let projectData = {};
+    let streamObj = null;
+
+    // GPS 가상 모크 데이터
+    const gpsMockMapping = {
+      yongwoon: { locName: '대전광역시 동구 용전동 164-4', lat: 36.3504, lon: 127.3848, slateLoc: '용전동164-4' },
+      sangdang: { locName: '청주시 상당구 금천동 29-1', lat: 36.6424, lon: 127.4897, slateLoc: '금천동29-1' },
+      jochiwon: { locName: '세종특별자치시 조치원읍 정리 12-3', lat: 36.5978, lon: 127.2925, slateLoc: '정리12-3' }
+    };
+
+    // 공정별 시뮬레이션 사진 리스트
+    const simulationImages = {
+      excavation: 'excavation_site.png',
+      pumping: 'water_pumping.png',
+      leak: 'leak_detection.png',
+      laying: 'pipe_laying.png'
+    };
+
+    // Default Simulated Database Data (dashboard.html과 동기화)
+    const defaultProjectData = {
+      yongwoon: {
+        name: '대전 동구 용전동 164-4 (긴급)',
+        client: '대전광역시 상수도사업본부',
+        period: '2026-05-10 ~ 2026-08-10',
+        progress: 60,
+        docsFinished: 3,
+        claimVal: '₩42,500,000',
+        ddayText: '기성 청구 임박 D-3',
+        ddayVal: 3,
+        location: 'Lat 36.3504 / Lon 127.3848',
+        locationName: '대전광역시 동구 용전동 164-4',
+        diameter: 'Φ15mm',
+        meterNew: 'N-202606',
+        meterOld: 'O-201912',
+        sealNo: 'S-9981',
+        guideNew: '0012 m³',
+        guideOld: '9845 m³',
+        recentUploads: [
+          { time: '2026-06-17 14:32:05', process: '터파기', spec: '굴착 깊이 1.25m', loc: 'Lat 36.3504 / Lon 127.3848', integrity: '99.2%', status: '검증 완료', img: 'excavation_site.png' },
+          { time: '2026-06-17 11:15:20', process: '물푸기', spec: '양수기 3인치 가동(45분)', loc: 'Lat 36.3505 / Lon 127.3847', integrity: '98.7%', status: '검증 완료', img: 'water_pumping.png' },
+          { time: '2026-06-16 16:45:10', process: '누수 확인', spec: '크랙 검출 1개소', loc: 'Lat 36.3501 / Lon 127.3851', integrity: '99.5%', status: '검증 완료', img: 'leak_detection.png' }
+        ],
+        document: {
+          docName: '대전_용전동_상수도_표준사진대지.xlsx',
+          processes: ['excavation', 'pumping', 'leak'],
+          period: '06-10 ~ 06-17',
+          totalCount: 3,
+          status: '지자체 규격 승인'
+        },
+        tasks: [
+          { id: 'task1', text: '1단계: 터파기 사진 수집 및 소칠판 매핑', done: true },
+          { id: 'task2', text: '2단계: 양수기 가동 및 물푸기 증빙 완료', done: true },
+          { id: 'task3', text: '3단계: 접합부 수압 시험 및 누수 확인', done: true },
+          { id: 'task4', text: '4단계: 주철관 부설 관종 자재 검수', done: false },
+          { id: 'task5', text: '지자체 표준 기성 서류 및 엑셀 빌딩', done: false }
+        ]
+      },
+      sangdang: {
+        name: '청주 상당구 금천동 29-1 (상시)',
+        client: '청주시 상수도사업본부',
+        period: '2026-06-01 ~ 2026-08-30',
+        progress: 20,
+        docsFinished: 1,
+        claimVal: '₩18,200,000',
+        ddayText: '기성 청구 D-14',
+        ddayVal: 14,
+        location: 'Lat 36.6424 / Lon 127.4897',
+        locationName: '청주시 상당구 금천동 29-1',
+        diameter: 'Φ20mm',
+        meterNew: 'N-202607',
+        meterOld: 'O-201804',
+        sealNo: 'S-7764',
+        guideNew: '0005 m³',
+        guideOld: '4512 m³',
+        recentUploads: [
+          { time: '2026-06-17 10:20:11', process: '관 부설', spec: '상수도 주철관 D150', loc: 'Lat 36.6424 / Lon 127.4897', integrity: '99.8%', status: '분석 완료', img: 'pipe_laying.png' }
+        ],
+        document: {
+          docName: '청주_금천동_배수관_표준사진대지.xlsx',
+          processes: ['laying'],
+          period: '06-01 ~ 06-17',
+          totalCount: 1,
+          status: '규격 자동 완성'
+        },
+        tasks: [
+          { id: 'task1', text: '착공 측량 및 현장 대지 폴더 설정', done: true },
+          { id: 'task2', text: '1단계: 터파기 굴착 수치 자동 분석', done: false },
+          { id: 'task3', text: '2단계: 배수 펌프 가동 정보 업로드', done: false },
+          { id: 'task4', text: '3단계: 관로 접합부 크랙 정밀 분석', done: false },
+          { id: 'task5', text: '4단계: 관 부설 자재 D150 검수 완료', done: false }
+        ]
+      },
+      jochiwon: {
+        name: '세종 조치원읍 정리 12-3 (긴급)',
+        client: '세종특별자치시 상하수도과',
+        period: '2026-06-15 ~ 2026-09-15',
+        progress: 0,
+        docsFinished: 0,
+        claimVal: '₩0',
+        ddayText: '기성 청구 D-28',
+        ddayVal: 28,
+        location: 'Lat 36.5978 / Lon 127.2925',
+        locationName: '세종특별자치시 조치원읍 정리 12-3',
+        diameter: 'Φ15mm',
+        meterNew: 'N-202608',
+        meterOld: 'O-202011',
+        sealNo: 'S-5542',
+        guideNew: '0000 m³',
+        guideOld: '1288 m³',
+        recentUploads: [],
+        document: null,
+        tasks: [
+          { id: 'task1', text: '세종지자체 공무 행정 서식 등록', done: false },
+          { id: 'task2', text: '터파기 굴착 기준 깊이 매핑', done: false },
+          { id: 'task3', text: '관로 누수 검측 압력 기준 설정', done: false },
+          { id: 'task4', text: '주철관 D200 준공 자재 검증', done: false }
+        ]
+      }
+    };
+
+    // Load from LocalStorage
+    function loadFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem('waterlink_project_data');
+        if (saved) {
+          projectData = JSON.parse(saved);
+        } else {
+          projectData = JSON.parse(JSON.stringify(defaultProjectData));
+          saveToLocalStorage();
+        }
+      } catch (e) {
+        console.warn("localStorage access is restricted. Using default in-memory project data.", e);
+        projectData = JSON.parse(JSON.stringify(defaultProjectData));
+      }
+    }
+
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem('waterlink_project_data', JSON.stringify(projectData));
+      } catch (e) {
+        console.warn("localStorage write is restricted. Content will not persist.", e);
+      }
+    }
+
+    // App Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFromLocalStorage();
+      initGps();
+      // Listen to storage sync from desktop dashboard
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'waterlink_project_data') {
+          loadFromLocalStorage();
+          renderActiveTabViews();
+        }
+      });
+      
+      // Default Load Home Tab Views
+      renderActiveTabViews();
+    });
+
+    // 1. GPS API Setup
+    function initGps() {
+      const gpsStatus = document.getElementById('gpsStatus');
+      if (navigator.geolocation) {
+        try {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              gpsStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>GPS 연결 성공</span>`;
+            },
+            (err) => {
+              gpsStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>가상 GPS 활성</span>`;
+            }
+          );
+        } catch (e) {
+          console.warn("GPS access blocked in this context. Defaulting to virtual GPS.", e);
+          gpsStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>가상 GPS 활성</span>`;
+        }
+      }
+    }
+
+    // 2. Tab Switcher (Bottom Navbar)
+    function switchNavTab(tabId, btnEl) {
+      // styles swap
+      document.querySelectorAll('.navbar-tab-btn').forEach(btn => btn.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      // view pages swap
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+
+      // Camera WebRTC toggle (Camera Tab일 때만 켜기)
+      if (tabId === 'tab-scanner') {
+        initCameraStream();
+      } else {
+        stopCameraStream();
+      }
+
+      renderActiveTabViews();
+    }
+
+    // 3. Project Change handler
+    function onProjectSelectorChange(selectEl) {
+      currentProjKey = selectEl.value;
+      
+      // 소칠판 갱신
+      const mapping = gpsMockMapping[currentProjKey];
+      document.getElementById('slateValLoc').textContent = mapping.slateLoc;
+      document.getElementById('inputLoc').value = mapping.slateLoc;
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('slateValDate').textContent = today;
+      
+      let areaName = '2025년 중부1구역';
+      if (currentProjKey === 'sangdang') areaName = '2025년 상당2구역';
+      if (currentProjKey === 'jochiwon') areaName = '2025년 세종3구역';
+      document.getElementById('slateValProj').textContent = areaName;
+      document.getElementById('inputProj').value = areaName;
+
+      renderActiveTabViews();
+    }
+
+    // Render Views depending on active Tab
+    function renderActiveTabViews() {
+      const activeTabSec = document.querySelector('.tab-section.active');
+      const tabId = activeTabSec.id;
+      const data = projectData[currentProjKey];
+
+      // Update Statistics Home Cards
+      if (document.getElementById('statClaimVal')) {
+        document.getElementById('statClaimVal').textContent = data.claimVal;
+        document.getElementById('statFinishedDocs').textContent = `${data.docsFinished} / ${data.tasks ? data.tasks.length : 5} 건`;
+      }
+
+      if (tabId === 'tab-home') {
+        // Render Recent Uploads Table
+        const tbody = document.querySelector('#recentUploadsTable tbody');
+        tbody.innerHTML = '';
+        if (!data.recentUploads || data.recentUploads.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--text-body);">수집된 현장 검측 사진이 없습니다.</td></tr>`;
+        } else {
+          data.recentUploads.forEach(item => {
+            tbody.innerHTML += `
+              <tr>
+                <td><div class="thumbnail-img" style="background-image:url('${item.img}')"></div></td>
+                <td style="color:var(--primary-neon); font-weight:800;">${item.process}</td>
+                <td>${item.spec}</td>
+                <td style="color:var(--text-muted); font-size:0.75rem;">${item.time.split(' ')[1]}</td>
+              </tr>
+            `;
+          });
+        }
+      }
+
+      if (tabId === 'tab-chest') {
+        // Render Document Chest Cards
+        const container = document.getElementById('documentListContainer');
+        container.innerHTML = '';
+        
+        let hasDocs = false;
+        Object.keys(projectData).forEach(key => {
+          const proj = projectData[key];
+          if (proj.document) {
+            hasDocs = true;
+            container.innerHTML += `
+              <div class="doc-item-card">
+                <div class="doc-card-header">
+                  <h5>${proj.document.docName}</h5>
+                  <span class="gps-indicator" style="font-size:0.75rem; background:rgba(16,185,129,0.1); border-color:var(--success); color:var(--success);"><i class="fa-solid fa-circle-check"></i> ${proj.document.status}</span>
+                </div>
+                <div class="doc-meta-grid">
+                  <span>현장명: <strong>${proj.name.split(' ')[2] || proj.name}</strong></span>
+                  <span>최종 수정: <strong>${proj.document.period}</strong></span>
+                  <span>검측 건수: <strong>${proj.document.totalCount}장</strong></span>
+                  <span>위치: <strong>${proj.locationName ? proj.locationName.split(' ')[2] : '대흥동'}</strong></span>
+                </div>
+                <div class="btn-group-row">
+                  <button class="btn-mini primary" onclick="openDocPreviewModal('${key}')"><i class="fa-solid fa-magnifying-glass"></i> 문서 미리보기</button>
+                  <button class="btn-mini success" onclick="downloadSpecifiedExcel('${key}')"><i class="fa-solid fa-download"></i> 엑셀 다운로드</button>
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        if (!hasDocs) {
+          container.innerHTML = `<div style="text-align:center; padding:3rem 1rem; color:var(--text-body); font-weight:bold;"><i class="fa-solid fa-file-invoice-dollar" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:1rem; display:block;"></i>작성 완료된 사진대지 서류가 없습니다.</div>`;
+        }
+      }
+
+      if (tabId === 'tab-project') {
+        // Render Projects Manage Grid
+        const grid = document.getElementById('projectManageGrid');
+        grid.innerHTML = '';
+        
+        Object.keys(projectData).forEach(key => {
+          const proj = projectData[key];
+          const isCurrent = (key === currentProjKey);
+          
+          let tasksHtml = '';
+          if (proj.tasks) {
+            proj.tasks.forEach(t => {
+              tasksHtml += `
+                <label class="task-item ${t.done ? 'completed' : ''}">
+                  <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleProjectTask('${key}', '${t.id}', this)">
+                  <span>${t.text}</span>
+                </label>
+              `;
+            });
+          }
+
+          grid.innerHTML += `
+            <div class="project-manage-card" style="${isCurrent ? 'border-color:var(--primary); background:rgba(2, 132, 199, 0.05);' : ''}">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h5 style="font-size:0.95rem; font-weight:800; color:var(--text-main);">${proj.name}</h5>
+                ${isCurrent ? '<span style="font-size:0.75rem; color:var(--primary); font-weight:bold;"><i class="fa-solid fa-circle-play"></i> 현재 작업현장</span>' : `<button class="btn-mini" style="max-width:85px; padding:0.4rem; font-size:0.75rem; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border-color);" onclick="selectActiveProject('${key}')">현장 선택</button>`}
+              </div>
+              
+              <div style="font-size:0.78rem; color:var(--text-body); display:flex; flex-direction:column; gap:0.25rem;">
+                <div>발주처: ${proj.client}</div>
+                <div>공사기간: ${proj.period}</div>
+              </div>
+
+              <div class="task-checkbox-list">
+                ${tasksHtml}
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-bottom:0.3rem;">
+                  <span style="font-weight:bold; color:var(--text-body);">공무 기성 완료율</span>
+                  <span style="color:var(--primary-neon); font-weight:800;">${proj.progress}%</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" style="width:${proj.progress}%;"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+    }
+
+    // 4. WebRTC Live Camera Setup
+    async function initCameraStream() {
+      const video = document.getElementById('videoStream');
+      const viewport = document.getElementById('virtualViewport');
+      const tip = document.getElementById('pcCameraTip');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
+        streamObj = stream;
+        video.srcObject = stream;
+        video.style.display = 'block';
+        tip.style.display = 'none';
+      } catch (err) {
+        console.warn("실시간 모바일 카메라 연결 실패 (일반 PC 환경 또는 차단됨):", err);
+        video.style.display = 'none';
+        tip.style.display = 'block';
+      }
+    }
+
+    function stopCameraStream() {
+      if (streamObj) {
+        streamObj.getTracks().forEach(track => track.stop());
+        streamObj = null;
+      }
+      document.getElementById('videoStream').style.display = 'none';
+    }
+
+    // 5. Camera Capture shutter (사진 바로 촬영)
+    function takePhoto() {
+      const video = document.getElementById('videoStream');
+      const viewport = document.getElementById('virtualViewport');
+      const flash = document.getElementById('camShutterFlash');
+
+      // Shutter Flash Effect
+      flash.style.animation = 'shutter-flash-animation 0.3s ease-out';
+      setTimeout(() => flash.style.animation = 'none', 300);
+
+      if (video.style.display !== 'none' && video.srcObject) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        capturedImgData = canvas.toDataURL('image/png');
+        
+        viewport.style.backgroundImage = `url('${capturedImgData}')`;
+        video.style.display = 'none';
+      } else {
+        // Fallback random mock picture
+        const processes = ['excavation', 'pumping', 'leak', 'laying'];
+        const chosen = processes[Math.floor(Math.random() * processes.length)];
+        capturedImgData = simulationImages[chosen];
+        
+        viewport.style.backgroundImage = `url('${capturedImgData}')`;
+        
+        let processName = '터파기 굴착';
+        if (chosen === 'pumping') processName = '계량기보호통 다대 연결부 누수';
+        if (chosen === 'leak') processName = '세들 잠금';
+        if (chosen === 'laying') processName = '청동게이트 밸브 연결';
+        
+        document.getElementById('slateValProcess').textContent = processName;
+        document.getElementById('inputProcess').value = processName;
+      }
+
+      document.getElementById('sendDataBtn').disabled = false;
+    }
+
+    // 6. Fallback Image select
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        capturedImgData = reader.result;
+        document.getElementById('videoStream').style.display = 'none';
+        document.getElementById('virtualViewport').style.backgroundImage = `url('${capturedImgData}')`;
+        
+        // Auto match process from filename
+        const fname = file.name.toLowerCase();
+        let procName = '터파기 굴착';
+        if (fname.includes('pump') || fname.includes('배수') || fname.includes('물푸')) {
+          procName = '계량기보호통 다대 연결부 누수';
+        } else if (fname.includes('leak') || fname.includes('누수') || fname.includes('세들')) {
+          procName = '세들 잠금';
+        } else if (fname.includes('pipe') || fname.includes('laying') || fname.includes('부설') || fname.includes('연결')) {
+          procName = '청동게이트 밸브 연결';
+        }
+        
+        document.getElementById('slateValProcess').textContent = procName;
+        document.getElementById('inputProcess').value = procName;
+
+        document.getElementById('sendDataBtn').disabled = false;
+      };
+    }
+
+    // 7. Core AI Analysis and Slate Merge
+    function sendToDashboard() {
+      const laser = document.getElementById('camLaserLine');
+      const sendBtn = document.getElementById('sendDataBtn');
+      const bbox = document.getElementById('camBbox');
+      
+      laser.style.display = 'block';
+      sendBtn.disabled = true;
+
+      const processText = document.getElementById('slateValProcess').textContent;
+      let mockSpec = '굴착 깊이 1.25m / 합격';
+      let mockBboxText = '터파기 단면 판독 (Conf. 99.2%)';
+      let mockBboxStyle = 'top: 25%; left: 20%; width: 60%; height: 50%;';
+      let detectedProcessCode = 'excavation';
+
+      if (processText.includes('누수') || processText.includes('배수')) {
+        mockSpec = '배수 가동 45분 완료';
+        mockBboxText = '배수용 양수기 3인치 (Conf. 98.7%)';
+        mockBboxStyle = 'top: 35%; left: 25%; width: 50%; height: 40%;';
+        detectedProcessCode = 'pumping';
+      } else if (processText.includes('세들') || processText.includes('잠금')) {
+        mockSpec = '크랙 0개소 무결';
+        mockBboxText = '세들 밸브 잠금 조임 (Conf. 99.5%)';
+        mockBboxStyle = 'top: 15%; left: 40%; width: 30%; height: 35%;';
+        detectedProcessCode = 'leak';
+      } else if (processText.includes('연결') || processText.includes('밸브') || processText.includes('재분기')) {
+        mockSpec = '주철관 D150 / 조임 합격';
+        mockBboxText = '상수도 주철관 D150 (Conf. 99.8%)';
+        mockBboxStyle = 'top: 20%; left: 15%; width: 70%; height: 60%;';
+        detectedProcessCode = 'laying';
+      }
+
+      setTimeout(() => {
+        laser.style.display = 'none';
+        bbox.style.cssText = `position: absolute; border: 2px solid var(--primary-neon); box-shadow: 0 0 8px rgba(56, 189, 248, 0.4); display: block; z-index: 10; ${mockBboxStyle}`;
+        document.getElementById('camBboxLabel').textContent = mockBboxText;
+
+        // Draw slate on image canvas
+        const canvas = document.getElementById('synthesisCanvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.src = capturedImgData;
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Render 엑셀형 소칠판 표 직접 드로잉
+          const slateW = 200;
+          const slateH = 100;
+          const slateX = canvas.width - slateW - 20;
+          const slateY = canvas.height - slateH - 20;
+
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(slateX, slateY, slateW, slateH);
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(slateX, slateY, slateW, slateH);
+
+          ctx.lineWidth = 1;
+          const rowH = slateH / 4;
+          for (let i = 1; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(slateX, slateY + (rowH * i));
+            ctx.lineTo(slateX + slateW, slateY + (rowH * i));
+            ctx.stroke();
+          }
+
+          const colW = 55;
+          ctx.beginPath();
+          ctx.moveTo(slateX + colW, slateY);
+          ctx.lineTo(slateX + colW, slateY + slateH);
+          ctx.stroke();
+
+          ctx.fillStyle = "#000000";
+          ctx.font = "bold 11px 'Malgun Gothic', sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          
+          const labels = ["공사명", "공 종", "위 치", "일 자"];
+          for (let i = 0; i < 4; i++) {
+            ctx.fillText(labels[i], slateX + (colW / 2), slateY + (rowH * i) + (rowH / 2));
+          }
+
+          ctx.textAlign = "left";
+          ctx.font = "11px 'Malgun Gothic', sans-serif";
+          const vals = [
+            document.getElementById('slateValProj').textContent,
+            document.getElementById('slateValProcess').textContent,
+            document.getElementById('slateValLoc').textContent,
+            document.getElementById('slateValDate').textContent
+          ];
+          for (let i = 0; i < 4; i++) {
+            ctx.fillText(vals[i], slateX + colW + 6, slateY + (rowH * i) + (rowH / 2), slateW - colW - 10);
+          }
+
+          synthesizedImgData = canvas.toDataURL('image/jpeg', 0.95);
+
+          // Save to LocalStorage Database
+          loadFromLocalStorage();
+          const proj = projectData[currentProjKey];
+          if (proj) {
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+            
+            const newItem = {
+              time: dateStr,
+              process: processText,
+              spec: mockSpec,
+              loc: proj.location,
+              integrity: '99.4%',
+              status: '검증 완료',
+              img: synthesizedImgData
+            };
+            proj.recentUploads.unshift(newItem);
+
+            if (!proj.document) {
+              proj.document = {
+                docName: `${proj.name.replace(/\s+/g, '_')}_표준사진대지.xlsx`,
+                processes: [detectedProcessCode],
+                period: (now.getMonth() + 1) + '-' + now.getDate(),
+                totalCount: 1,
+                status: '지자체 규격 승인'
+              };
+            } else {
+              if (!proj.document.processes.includes(detectedProcessCode)) {
+                proj.document.processes.push(detectedProcessCode);
+              }
+              proj.document.totalCount += 1;
+            }
+            proj.docsFinished = proj.document.processes.length;
+
+            const nextTask = proj.tasks.find(t => !t.done);
+            if (nextTask) nextTask.done = true;
+
+            const doneCount = proj.tasks.filter(t => t.done).length;
+            proj.progress = Math.round((doneCount / proj.tasks.length) * 100);
+
+            saveToLocalStorage();
+            alert(`[AI 분석 및 전송 성공] ${processText} 검측 데이터가 대시보드로 자동 전송되었습니다.`);
+            
+            // Switch to Home tab immediately after transfer
+            switchNavTab('tab-home', document.querySelectorAll('.navbar-tab-btn')[0]);
+            resetAppView();
+          }
+        };
+
+      }, 2000);
+    }
+
+    // Reset Camera view
+    function resetAppView() {
+      document.getElementById('camBbox').style.display = 'none';
+      document.getElementById('sendDataBtn').disabled = true;
+      capturedImgData = null;
+      synthesizedImgData = null;
+      initCameraStream();
+    }
+
+    // 8. Edit Drawer Controls
+    function toggleEditDrawer(isOpen) {
+      const drawer = document.getElementById('editDrawerOverlay');
+      drawer.style.display = isOpen ? 'flex' : 'none';
+    }
+
+    function syncSlateText() {
+      document.getElementById('slateValProj').textContent = document.getElementById('inputProj').value;
+      document.getElementById('slateValProcess').textContent = document.getElementById('inputProcess').value;
+      document.getElementById('slateValLoc').textContent = document.getElementById('inputLoc').value;
+    }
+
+    // 9. Project Tasks Toggle handler
+    function toggleProjectTask(projKey, taskId, checkboxEl) {
+      const proj = projectData[projKey];
+      const task = proj.tasks.find(t => t.id === taskId);
+      if (task) {
+        task.done = checkboxEl.checked;
+        if (task.done) {
+          checkboxEl.parentElement.classList.add('completed');
+        } else {
+          checkboxEl.parentElement.classList.remove('completed');
+        }
+
+        const doneCount = proj.tasks.filter(t => t.done).length;
+        proj.progress = Math.round((doneCount / proj.tasks.length) * 100);
+        proj.docsFinished = doneCount;
+
+        saveToLocalStorage();
+        renderActiveTabViews();
+      }
+    }
+
+    function selectActiveProject(projKey) {
+      currentProjKey = projKey;
+      document.getElementById('projectSelector').value = projKey;
+      onProjectSelectorChange(document.getElementById('projectSelector'));
+    }
+
+    // 10. Add New Project Modal
+    function openNewProjectModal() {
+      document.getElementById('addProjectModalOverlay').style.display = 'flex';
+    }
+
+    function closeNewProjectModal() {
+      document.getElementById('addProjectModalOverlay').style.display = 'none';
+      document.getElementById('newProjName').value = '';
+      document.getElementById('newProjClient').value = '';
+      document.getElementById('newProjPeriod').value = '';
+      document.getElementById('newProjLocation').value = '';
+    }
+
+    function handleNewProjectSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('newProjName').value;
+      const client = document.getElementById('newProjClient').value;
+      const period = document.getElementById('newProjPeriod').value;
+      const location = document.getElementById('newProjLocation').value;
+
+      const newKey = 'project_' + Date.now();
+      projectData[newKey] = {
+        name: name,
+        client: client,
+        period: period,
+        progress: 0,
+        docsFinished: 0,
+        claimVal: '₩0',
+        ddayText: '기성 청구 대기',
+        ddayVal: 30,
+        location: location,
+        recentUploads: [],
+        document: null,
+        tasks: [
+          { id: 'task1', text: '1단계: 시공 사진 검측 매핑 시작', done: false },
+          { id: 'task2', text: '2단계: 양수 작업 시각 자료 수집', done: false },
+          { id: 'task3', text: '3단계: 연결 관로 이상 누수 정밀 검출', done: false },
+          { id: 'task4', text: '4단계: 자재 규격 및 소칠판 합성', done: false },
+          { id: 'task5', text: '지자체 제출용 표준 기성 엑셀 출력', done: false }
+        ]
+      };
+
+      currentProjKey = newKey;
+      
+      const select = document.getElementById('projectSelector');
+      const opt = document.createElement('option');
+      opt.value = newKey;
+      opt.textContent = name;
+      select.appendChild(opt);
+      select.value = newKey;
+
+      saveToLocalStorage();
+      closeNewProjectModal();
+      renderActiveTabViews();
+      
+      alert(`[${name}] 현장이 모바일 관제 데이터에 등록되었습니다.`);
+    }
+
+    // 11. Document Preview Modal (PC 대시보드와 100% 동일한 엑셀 2열 구조)
+    function openDocPreviewModal(projKey) {
+      const overlay = document.getElementById('virtualDocPreviewModalOverlay');
+      const container = document.getElementById('excelPreviewContainer');
+      const proj = projectData[projKey];
+
+      if (!proj) return;
+
+      const locationName = proj.locationName || '대전광역시 중구 대흥동 116-10';
+      const diameter = proj.diameter || 'Φ15mm';
+      const meterNew = proj.meterNew || '';
+      const meterOld = proj.meterOld || '';
+      const sealNo = proj.sealNo || '';
+      const guideNew = proj.guideNew || '';
+      const guideOld = proj.guideOld || '';
+
+      let slateLoc = '은행동116-10';
+      if (proj.locationName) {
+        const match = proj.locationName.match(/([가-힣]+동)\s*(\d+(-\d+)?)/);
+        if (match) {
+          slateLoc = match[1] + match[2];
+        }
+      }
+
+      const uploads = proj.recentUploads || [];
+      function getProcessImage(keywords) {
+        const match = uploads.find(u => {
+          const proc = u.process.toLowerCase();
+          return keywords.some(keyword => proc.includes(keyword.toLowerCase()));
+        });
+        return match ? match.img : null;
+      }
+
+      const img1 = getProcessImage(['터파기', '굴착', 'excavation']);
+      const img2 = getProcessImage(['물푸기', '배수', 'pumping']);
+      const img3 = getProcessImage(['누수', 'leak']);
+      const img4 = getProcessImage(['관 부설', '관부설', 'laying', '조립']);
+      const img5 = null;
+      const img6 = null;
+
+      function renderExcelPhotoCell(imgUrl, slateLocation) {
+        if (imgUrl) {
+          return `
+            <div class="excel-photo-view" style="background-image: url('${imgUrl}')">
+              <div class="excel-photo-slate">
+                <table class="excel-slate-table">
+                  <tr><td class="slate-lbl">공사명</td><td class="slate-val">2025년 중부1구역</td></tr>
+                  <tr><td class="slate-lbl">공 종</td><td class="slate-val"></td></tr>
+                  <tr><td class="slate-lbl">위 치</td><td class="slate-val">${slateLocation}</td></tr>
+                  <tr><td class="slate-lbl">일 자</td><td class="slate-val"></td></tr>
+                </table>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="excel-photo-placeholder">
+              <i class="fa-regular fa-image" style="font-size: 1.25rem; color:#cbd5e1; margin-bottom: 0.2rem;"></i>
+              <span>사진 미등록</span>
+            </div>
+          `;
+        }
+      }
+
+      // 모바일 화면 비율에 꼭 맞춘 축소형 엑셀 사진대지 프레임
+      let tableHtml = `
+        <div class="excel-preview-frame">
+          <div class="excel-title-bar">사 진 대 지</div>
+          
+          <table class="excel-table" style="table-layout: fixed;">
+            <tr>
+              <td class="excel-info-label" style="width: 25%;">공 사 명</td>
+              <td colspan="5" style="text-align: left; padding-left: 5px;">2025년 상수도 연간단가 계약공사</td>
+            </tr>
+            <tr>
+              <td class="excel-info-label">위   치</td>
+              <td colspan="3" style="text-align: left; padding-left: 5px;">${locationName}</td>
+              <td class="excel-info-label" style="width: 15%;">구 경</td>
+              <td style="width: 15%;">${diameter}</td>
+            </tr>
+            <tr>
+              <td class="excel-info-label">신 계량기 번호</td>
+              <td style="text-align: left; padding-left: 5px;">${meterNew}</td>
+              <td class="excel-info-label" style="width: 15%;">봉인번호</td>
+              <td style="text-align: left; padding-left: 5px;">${sealNo}</td>
+              <td class="excel-info-label" style="width: 15%;">설치지침</td>
+              <td style="text-align: left; padding-left: 5px;">${guideNew}</td>
+            </tr>
+            <tr>
+              <td class="excel-info-label">구 계량기 번호</td>
+              <td style="text-align: left; padding-left: 5px;">${meterOld}</td>
+              <td style="background-color: #ffffff;"></td>
+              <td style="background-color: #ffffff;"></td>
+              <td class="excel-info-label">철거지침</td>
+              <td style="text-align: left; padding-left: 5px;">${guideOld}</td>
+            </tr>
+          </table>
+
+          <table class="excel-table" style="table-layout: fixed; margin-top: -1px; border-top: none;">
+            <colgroup>
+              <col style="width: 50%;">
+              <col style="width: 50%;">
+            </colgroup>
+            <tr>
+              <td class="excel-photo-title-cell">글착(인력)</td>
+              <td class="excel-photo-title-cell">계량기보호통 다대 연결부 누수</td>
+            </tr>
+            <tr>
+              <td class="excel-photo-cell">
+                ${renderExcelPhotoCell(img1, slateLoc)}
+              </td>
+              <td class="excel-photo-cell">
+                ${renderExcelPhotoCell(img2, slateLoc)}
+              </td>
+            </tr>
+            <tr>
+              <td class="excel-photo-title-cell">세들 잠금</td>
+              <td class="excel-photo-title-cell">청동게이트 밸브 연결</td>
+            </tr>
+            <tr>
+              <td class="excel-photo-cell">
+                ${renderExcelPhotoCell(img3, slateLoc)}
+              </td>
+              <td class="excel-photo-cell">
+                ${renderExcelPhotoCell(img4, slateLoc)}
+              </td>
+            </tr>
+            <tr>
+              <td class="excel-photo-title-cell">재분기(STS D=20mm)</td>
+              <td class="excel-photo-title-cell">골재포설및 다짐</td>
+            </tr>
+            <tr>
+              <td class="excel-photo-cell">
+                ${renderExcelPhotoCell(img5, slateLoc)}
+              </td>
+              <td class="excel-photo-cell">
+                ${renderExcelPhotoCell(img6, slateLoc)}
+              </td>
+            </tr>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = tableHtml;
+
+      document.getElementById('previewDownloadBtn').onclick = () => {
+        triggerCSVDownload(proj.document ? proj.document.docName : '표준사진대지.csv', projKey);
+        closeDocPreviewModal();
+      };
+
+      overlay.style.display = 'flex';
+    }
+
+    function closeDocPreviewModal() {
+      document.getElementById('virtualDocPreviewModalOverlay').style.display = 'none';
+    }
+
+    // Download CSV
+    function downloadSpecifiedExcel(projKey) {
+      const proj = projectData[projKey];
+      if (proj && proj.document) {
+        triggerCSVDownload(proj.document.docName, projKey);
+      }
+    }
+
+    function triggerCSVDownload(filename, projKey) {
+  const proj = projectData[projKey];
+  if (!proj) return;
+  
+  const locationName = proj.location || '대전광역시 동구 용운동 일원';
+  const diameter = proj.spec || 'D 200 mm';
+  const isLay = projKey === 'yongwoon';
+  const meterNew = isLay ? '58204859' : '92048154';
+  const meterOld = isLay ? '28405820' : '10482948';
+  const sealNo = isLay ? '서구-00381' : '동구-00482';
+  const guideNew = isLay ? '0048.5 ㎥' : '0012.8 ㎥';
+  const guideOld = isLay ? '8401.2 ㎥' : '1240.5 ㎥';
+
+  const wb = XLSX.utils.book_new();
+  
+  const wsData = [
+    ["사 진 대 지", "", "", "", "", ""],
+    ["공 사 명", "2026년 상수도 관망 정비공사", "", "", "", ""],
+    ["위    치", locationName, "", "", "구 경", diameter],
+    ["신 설 계 량 기 번 호", meterNew, "봉인번호", sealNo, "설치지침", guideNew],
+    ["철 거 계 량 기 번 호", meterOld, "", "", "철거지침", guideOld],
+    ["전  (착공전)", "", "", "후  (준공)", "", ""],
+    ["[전경] 공사 시공 전경", "", "", "[중경] 배관설치 완료 상세 사진", "", ""],
+    ["[사진 1]", "", "", "[사진 2]", "", ""],
+    ["측 량", "", "", "시공 완료", "", ""],
+    ["[사진 3]", "", "", "[사진 4]", "", ""],
+    ["준공 관급 검사", "", "", "최종 검사 완료", "", ""],
+    ["[사진 5]", "", "", "[사진 6]", "", ""]
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 0 } }, { s: { r: 1, c: 1 }, e: { r: 1, c: 5 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 0 } }, { s: { r: 2, c: 1 }, e: { r: 2, c: 3 } },
+    { s: { r: 4, c: 1 }, e: { r: 4, c: 3 } },
+    { s: { r: 5, c: 0 }, e: { r: 5, c: 2 } }, { s: { r: 5, c: 3 }, e: { r: 5, c: 5 } },
+    { s: { r: 6, c: 0 }, e: { r: 6, c: 2 } }, { s: { r: 6, c: 3 }, e: { r: 6, c: 5 } },
+    { s: { r: 7, c: 0 }, e: { r: 7, c: 2 } }, { s: { r: 7, c: 3 }, e: { r: 7, c: 5 } },
+    { s: { r: 8, c: 0 }, e: { r: 8, c: 2 } }, { s: { r: 8, c: 3 }, e: { r: 8, c: 5 } },
+    { s: { r: 9, c: 0 }, e: { r: 9, c: 2 } }, { s: { r: 9, c: 3 }, e: { r: 9, c: 5 } },
+    { s: { r: 10, c: 0 }, e: { r: 10, c: 2 } }, { s: { r: 10, c: 3 }, e: { r: 10, c: 5 } },
+    { s: { r: 11, c: 0 }, e: { r: 11, c: 2 } }, { s: { r: 11, c: 3 }, e: { r: 11, c: 5 } }
+  ];
+
+  ws['!rows'] = [
+    { hpt: 45 },
+    { hpt: 26 }, { hpt: 26 }, { hpt: 26 }, { hpt: 26 },
+    { hpt: 28 },
+    { hpt: 24 }, { hpt: 190 },
+    { hpt: 24 }, { hpt: 190 },
+    { hpt: 24 }, { hpt: 190 }
+  ];
+  ws['!cols'] = [
+    { wch: 18 }, { wch: 18 }, { wch: 15 },
+    { wch: 18 }, { wch: 18 }, { wch: 15 }
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, "공무 사진대지");
+  XLSX.writeFile(wb, filename);
+
+  alert("[" + proj.name + "] 공무 서류 변환 및 규격 사진대지 엑셀 파일(.xlsx) 다운로드가 완료되었습니다.");
+}
+  </script>
+</body>
+</html>
