@@ -1,147 +1,167 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>워터링크 MVP 데모 통합 포털</title>
-  
-  <!-- Pretendard 폰트 불러오기 -->
-  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-  <!-- FontAwesome 아이콘 불러오기 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaterLink SaaS - 통합 게이트웨이</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.4);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(56, 189, 248, 0.15);
+        }
 
-  <style>
-    body {
-      background: #0f172a;
-      color: #ffffff;
-      font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
-      background-image: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-    }
-    
-    .container {
-      text-align: center;
-      max-width: 800px;
-      padding: 2rem;
-    }
-    
-    .logo-area {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .logo-area i {
-      font-size: 3rem;
-      color: #00f2fe;
-      filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.5));
-    }
-    
-    .logo-area span {
-      font-size: 2.8rem;
-      font-weight: 900;
-      letter-spacing: 2px;
-      color: #ffffff;
-    }
-    
-    p {
-      color: #94a3b8;
-      font-size: 1.2rem;
-      margin-bottom: 3.5rem;
-      font-weight: 400;
-    }
-    
-    .btn-group {
-      display: flex;
-      gap: 2.5rem;
-      justify-content: center;
-    }
-    
-    .card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1.5px solid rgba(0, 242, 254, 0.15);
-      border-radius: 16px;
-      padding: 3rem 2rem;
-      width: 280px;
-      text-decoration: none;
-      color: white;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    }
-    
-    .card i {
-      font-size: 3.5rem;
-      margin-bottom: 1.5rem;
-      transition: all 0.3s ease;
-    }
-    
-    .card.app i {
-      color: #00f2fe;
-      text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-    }
-    
-    .card.dashboard i {
-      color: #38bdf8;
-      text-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
-    }
-    
-    .card:hover {
-      transform: translateY(-8px);
-      border-color: #00f2fe;
-      background: rgba(0, 242, 254, 0.04);
-      box-shadow: 0 15px 40px rgba(0, 242, 254, 0.15);
-    }
-    
-    .card:hover i {
-      transform: scale(1.1);
-    }
-    
-    .card h2 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin: 0 0 0.8rem 0;
-      color: #ffffff;
-    }
-    
-    .card span {
-      color: #64748b;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-  </style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background effects */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .container {
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .portal-grid {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .portal-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 320px;
+            text-align: left;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        .btn-go {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: gap 0.2s ease;
+        }
+
+        .portal-card:hover .btn-go {
+            gap: 0.8rem;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo-area">
-      <i class="fa-solid fa-droplet"></i>
-      <span>WATER LINK</span>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <div class="logo-area">
+            <i class="fa-solid fa-droplet"></i>
+            <span>WATER LINK</span>
+        </div>
+        <p class="subtitle">AI 관급 상수도 시공 관리 SaaS 플랫폼</p>
+
+        <div class="portal-grid">
+            <!-- Dashboard -->
+            <a href="dashboard.html" class="portal-card">
+                <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="card-title">시공 관리 대시보드</div>
+                <div class="card-desc">현장 데이터 실시간 모니터링, 지자체 제출용 사진대지 엑셀 자동 생성 및 다운로드 기능</div>
+                <div class="btn-go">대시보드 바로가기 <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <!-- Mobile App -->
+            <a href="app.html" class="portal-card">
+                <div class="card-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="card-title">현장 카메라 App</div>
+                <div class="card-desc">Vision AI 자동 인식 및 실시간 소칠판 합성 모바일 현장 시공 정보 실시간 수집</div>
+                <div class="btn-go">모바일 화면 바로가기 <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
     </div>
-    <p>상수도 특화 시공 이미지 수집 및 관급 공무 행정 자동화 시스템 데모 포털</p>
-    
-    <div class="btn-group">
-      <a href="app.html" target="_blank" class="card app">
-        <i class="fa-solid fa-mobile-screen-button"></i>
-        <h2>현장 전송 앱</h2>
-        <span>[현장 시공 소장용]<br>실시간 시공 사진 촬영 전송 및 AI 판독 수집 단말 시뮬레이터</span>
-      </a>
-      
-      <a href="dashboard.html" target="_blank" class="card dashboard">
-        <i class="fa-solid fa-desktop"></i>
-        <h2>관리 대시보드</h2>
-        <span>[사무실 대리인용]<br>시공 검측 데이터 수집 모니터링 및 지자체 표준 사진대지 엑셀 자동화</span>
-      </a>
-    </div>
-  </div>
 </body>
 </html>
